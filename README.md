@@ -50,13 +50,11 @@ npm test
 homelab-automation-dashboard/
 ├── public/                # Static frontend assets (HTML, CSS, JS)
 ├── src/
-|   ├── server.js          # Main server entry point
-│   └── controllers/       # API controllers
-│   ├── githubPrDiffController.js
-│   ├── gitlabAssignedMrController.js
-│   ├── gitlabAutomergeController.js
-│   ├── gitlabPipelineController.js
-│   └── index.js
+│   ├── server.js          # Main server entry point
+│   ├── routes/            # Express routers
+│   ├── controllers/       # Request handlers
+│   ├── services/          # Business logic
+│   └── utils/             # Pure helpers
 ├── package.json           # Project metadata and scripts
 ├── eslint.config.mjs      # ESLint configuration
 └── README.md              # Project documentation
@@ -64,7 +62,7 @@ homelab-automation-dashboard/
 
 ## API Endpoints
 
-The following endpoints are available (see `src/controllers/` for implementation details):
+The following endpoints are available (see `src/routes/` for route definitions and `src/services/` for logic details):
 
 ### GitHub Endpoints
 
