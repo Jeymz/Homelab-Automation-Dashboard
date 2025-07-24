@@ -58,10 +58,31 @@ homelab-automation-dashboard/
 
 The following endpoints are available (see `src/controllers/` for implementation details):
 
-- `/api/github/pr-diff` — Get GitHub pull request diffs
-- `/api/gitlab/assigned-mr` — List assigned GitLab merge requests
-- `/api/gitlab/automerge` — Automerge GitLab merge requests
-- `/api/gitlab/pipeline` — Get GitLab pipeline status
+### GitHub Endpoints
+
+- `/api/github/prs` — List pull requests for a repository (`owner` and `repo` required as query params)
+- `/api/github/pr-diff` — Get diff for a specific pull request (`owner`, `repo`, `prNumber` required as query params)
+
+### GitLab Endpoints
+
+- `/api/gitlab/users` — List GitLab users (for dropdowns, etc.)
+- `/api/gitlab/pipeline-status` — Get pipeline status table
+- `/api/gitlab/automerge` — Automerge GitLab merge requests (POST)
+- `/api/gitlab/assigned-mrs` — List assigned GitLab merge requests
+
+### Azure Endpoints
+
+- `/api/azure/dns-zones` — Get Azure DNS zones and their tags
+- `/api/azure/dns-zones/records` — Get record count for a DNS zone
+
+### Namecheap Endpoints
+
+- `/api/namecheap/domains` — Get Namecheap domains and properties
+
+### Wave Endpoints
+
+- `/api/wave/customers` — Get Wave customers
+- `/api/wave/customers/:customerId/invoices` — Get invoices for a specific Wave customer
 
 ## Contributing
 
