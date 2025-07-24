@@ -73,6 +73,10 @@ app.get('/api/namecheap/domains', controllers.namecheapDomainsController.getName
 app.get('/api/wave/customers', controllers.waveCustomersController.getWaveCustomersTable);
 app.get('/api/wave/customers/:customerId/invoices', controllers.waveCustomersController.getWaveCustomerInvoices);
 
-app.listen(PORT, () => {
-  console.log(`Automation dashboard running at http://localhost:${PORT}`); // eslint-disable-line no-console
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Automation dashboard running at http://localhost:${PORT}`); // eslint-disable-line no-console
+  });
+}
+
+module.exports = app;
