@@ -36,6 +36,14 @@ npm start
 
 The dashboard will be available at [http://localhost:3000](http://localhost:3000) by default (check your `server.js` for the actual port).
 
+## Testing
+
+Run the unit tests with:
+
+```sh
+npm test
+```
+
 ## Project Structure
 
 ```txt
