@@ -19,7 +19,7 @@ Copilot and collaborators should treat this file as the project's *north star* �
 
 ### 🧱 Folder Structure Convention
 
-```
+```text
 src/
 ├── controllers/    # Request handling only (no business logic)
 ├── services/       # Encapsulates business logic and external APIs
@@ -47,7 +47,7 @@ src/
 
 ### ✅ Input Validation
 
-- Use `zod` or `joi` in `middleware/validate.js` to define schemas for:
+- Use `ajv` in `middleware/validate.js` to define schemas for:
   - Route params
   - Query params
   - Body inputs
@@ -86,7 +86,7 @@ The frontend is built with vanilla JS/CSS/HTML.
 
 ## 💬 Commit Message Convention (Optional)
 
-```
+```text
 feat: add GitHub PR diff service
 fix: sanitize Azure zone name input
 refactor: split GitLab controller to service
@@ -108,7 +108,7 @@ These rules should always be followed and respected by Copilot:
 
 ### Node.js Best Practices
 
-- Use `zod`, `ajv`, or `joi` for schema validation
+ - Use `ajv` for schema validation
 - Sanitize input with `validator`
 - Never use `eval`, `new Function`, or dynamic `require()`
 - Use `helmet` in Express to add security headers
