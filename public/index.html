@@ -33,26 +33,6 @@
     </div>
     <div class="output" id="output">Select a script to see output here.</div>
   </div>
-  <script>
-    // Tab switching logic
-    document.addEventListener('DOMContentLoaded', function() {
-      const tabBtns = document.querySelectorAll('.tab-btn');
-      const tabSections = {
-        code: document.getElementById('tab-code'),
-        networking: document.getElementById('tab-networking'),
-        finance: document.getElementById('tab-finance')
-      };
-      tabBtns.forEach(btn => {
-        btn.onclick = function() {
-          tabBtns.forEach(b => b.classList.remove('active'));
-          this.classList.add('active');
-          Object.keys(tabSections).forEach(key => {
-            tabSections[key].style.display = (this.dataset.tab === key) ? '' : 'none';
-          });
-        };
-      });
-    });
-  </script>
   <script src="main.js"></script>
 </body>
 </html>

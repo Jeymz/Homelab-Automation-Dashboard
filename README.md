@@ -50,21 +50,26 @@ npm test
 homelab-automation-dashboard/
 ├── public/                # Static frontend assets (HTML, CSS, JS)
 ├── src/
-|   ├── server.js          # Main server entry point
-│   └── controllers/       # API controllers
-│   ├── githubPrDiffController.js
-│   ├── gitlabAssignedMrController.js
-│   ├── gitlabAutomergeController.js
-│   ├── gitlabPipelineController.js
-│   └── index.js
+│   ├── server.js          # Main server entry point
+│   ├── routes/            # Express routers
+│   ├── controllers/       # Request handlers
+│   ├── services/          # Business logic
+│   ├── middleware/        # Validation and security helpers
+│   └── utils/             # Pure helpers
 ├── package.json           # Project metadata and scripts
 ├── eslint.config.mjs      # ESLint configuration
 └── README.md              # Project documentation
 ```
 
+### Security
+
+Helmet is used to add security headers including a strict content security
+policy. Frontend scripts attach all event handlers via JavaScript modules,
+so no inline handlers are needed.
+
 ## API Endpoints
 
-The following endpoints are available (see `src/controllers/` for implementation details):
+The following endpoints are available (see `src/routes/` for route definitions and `src/services/` for logic details):
 
 ### GitHub Endpoints
 
