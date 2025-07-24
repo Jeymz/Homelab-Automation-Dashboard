@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homelab Automation Dashboard</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Homelab Automation Dashboard</h1>
+    <div class="tab-container" style="margin:2em 0; text-align:center;">
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="code">Code Maintenance</button>
+        <button class="tab-btn" data-tab="networking">Networking</button>
+        <button class="tab-btn" data-tab="finance">Finance</button>
+      </div>
+      <div class="script-list" id="tab-code">
+        <button class="script-btn" id="pipeline-status-btn">GitLab Pipeline Status</button>
+        <button class="script-btn" id="pipeline-status-forever-btn">Pipeline Status (Forever)</button>
+        <button class="script-btn" id="stop-forever-btn" style="display:none;background:#f88;">Stop Refresh</button>
+        <button class="script-btn" id="automerge-btn">Run Auto-Merge</button>
+        <button class="script-btn" id="github-pr-diff-btn">GitHub PR Diffs</button>
+        <button class="script-btn" id="gitlab-assigned-mrs-btn">GitLab Assigned MRs</button>
+      </div>
+      <div class="script-list" id="tab-networking" style="display:none;">
+        <button class="script-btn" id="azure-dns-zones-btn">Azure DNS Zones</button>
+        <button class="script-btn" id="namecheap-domains-btn">Namecheap Domains</button>
+      </div>
+      <div class="script-list" id="tab-finance" style="display:none;">
+        <button class="script-btn" id="wave-customers-btn">Wave Customers</button>
+      </div>
+    </div>
+    <div class="output" id="output">Select a script to see output here.</div>
+  </div>
+  <script>
+    // Tab switching logic
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabSections = {
+        code: document.getElementById('tab-code'),
+        networking: document.getElementById('tab-networking'),
+        finance: document.getElementById('tab-finance')
+      };
+      tabBtns.forEach(btn => {
+        btn.onclick = function() {
+          tabBtns.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          Object.keys(tabSections).forEach(key => {
+            tabSections[key].style.display = (this.dataset.tab === key) ? '' : 'none';
+          });
+        };
+      });
+    });
+  </script>
+  <script src="main.js"></script>
+</body>
+</html>

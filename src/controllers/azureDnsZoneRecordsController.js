@@ -1,0 +1,57 @@
+const { DefaultAzureCredential } = require('@azure/identity');
+const { DnsManagementClient } = require('@azure/arm-dns');
+
+
+/**
+ * Express handler to return the count or all records for a DNS zone.
+ * If ?all=1 is passed, returns all records with details.
+ */
+async function getDnsZoneRecordCount(req, res) {
+  const subscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
+  const { resourceGroup, zoneName, all } = req.query;
+  if (!subscriptionId || !resourceGroup || !zoneName) {
+    return res.status(400).json({ success: false, error: 'Missing subscriptionId, resourceGroup, or zoneName' });
+  }
+  try {
+    const credential = new DefaultAzureCredential();
+    const client = new DnsManagementClient(credential, subscriptionId);
+    if (all) {
+      const records = [];
+      for await (const record of client.recordSets.listByDnsZone(resourceGroup, zoneName)) {
+        let values = [];
+        if (record.aRecords) values = record.aRecords.map(r => r.ipv4Address);
+        else if (record.aaaaRecords) values = record.aaaaRecords.map(r => r.ipv6Address);
+        else if (record.cnameRecord) values = [record.cnameRecord.cname];
+        else if (record.mxRecords) values = record.mxRecords.map(r => `${r.preference} ${r.exchange}`);
+        else if (record.txtRecords) values = record.txtRecords.flatMap(r => r.value);
+        else if (record.nsRecords) values = record.nsRecords.map(r => r.nsdname);
+        else if (record.srvRecords) values = record.srvRecords.map(r => `${r.priority} ${r.weight} ${r.port} ${r.target}`);
+        else if (record.ptrRecords) values = record.ptrRecords.map(r => r.ptrdname);
+        else if (record.soaRecord) values = [record.soaRecord.host];
+        else if (record.caaRecords) values = record.caaRecords.map(r => `${r.flags} ${r.tag} ${r.value}`);
+        else if (record.aliasRecords) values = record.aliasRecords.map(r => r.azureResourceName);
+        records.push({
+          name: record.name,
+          type: record.type.split('/').pop(),
+          ttl: record.ttl,
+          values,
+        });
+      }
+      return res.json({ success: true, records });
+    }
+    let count = 0;
+    const iterator = client.recordSets.listByDnsZone(resourceGroup, zoneName)[Symbol.asyncIterator]();
+    while (true) {
+      const { done } = await iterator.next();
+      if (done) break;
+      count++;
+    }
+    return res.json({ success: true, count });
+  } catch (e) {
+    return res.status(500).json({ success: false, error: e.message });
+  }
+}
+
+module.exports = {
+  getDnsZoneRecordCount,
+};
