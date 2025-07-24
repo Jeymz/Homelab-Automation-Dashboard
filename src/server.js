@@ -1,6 +1,6 @@
 const path = require('path');
 const express = require('express');
-const helmet = require('helmet');
+const security = require('./middleware/security');
 
 const gitlabRoutes = require('./routes/gitlabRoutes');
 const githubRoutes = require('./routes/githubRoutes');
@@ -11,7 +11,7 @@ const waveRoutes = require('./routes/waveRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(helmet());
+app.use(security());
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '../public')));

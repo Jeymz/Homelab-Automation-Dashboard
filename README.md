@@ -54,11 +54,19 @@ homelab-automation-dashboard/
 │   ├── routes/            # Express routers
 │   ├── controllers/       # Request handlers
 │   ├── services/          # Business logic
+│   ├── middleware/        # Validation and security helpers
 │   └── utils/             # Pure helpers
 ├── package.json           # Project metadata and scripts
 ├── eslint.config.mjs      # ESLint configuration
 └── README.md              # Project documentation
 ```
+
+### Security
+
+Helmet's default content security policy blocks inline event handlers.
+The middleware in `src/middleware/security.js` extends the policy with
+`script-src-attr 'unsafe-inline'` so existing `onclick` attributes
+continue to work.
 
 ## API Endpoints
 
