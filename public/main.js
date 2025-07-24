@@ -680,6 +680,7 @@ async function showGitlabAssignedMrsForm() {
         const result = await res.json();
         if (result.success && Array.isArray(result.data)) {
           subRow.firstElementChild.innerHTML = `<h4 style='margin:0 0 0.5em 0;'>Assigned Merge Requests for <span style='color:#1976d2;'>${username}</span></h4>` + renderGitlabMrsTable(result.data);
+          attachOutputEvents();
         } else {
           subRow.firstElementChild.innerHTML = `<span class="loading">${result.error || 'Failed to load assigned MRs.'}</span>`;
         }
