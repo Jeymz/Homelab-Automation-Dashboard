@@ -62,51 +62,57 @@ async function createMergeRequest(projectId, source, target, description, labels
   return { data, response: res };
 }
 
-// Main controller function
-async function runAutomergeAndGetMRs() {
-  const actionLog = [];
-  const projects = await getAllProjects();
-  for (const project of projects) {
-    const projectId = project.id;
-    const branchesToCheck = [
-      { source: 'main', target: 'development' },
-      { source: 'development', target: 'production' },
-    ];
-    for (const { source, target } of branchesToCheck) {
-      const sourceExists = await branchExists(projectId, source);
-      const targetExists = await branchExists(projectId, target);
-      if (!sourceExists || !targetExists) {
-        actionLog.push({ name: project.name, source, target, action: 'Missing branch' });
-        continue;
-      }
-      const comparison = await getComparison(projectId, source, target);
-      if (comparison.commits.length > 0) {
-        const alreadyExists = await hasOpenMergeRequest(projectId, source, target);
-        if (alreadyExists) {
-          actionLog.push({ name: project.name, source, target, action: 'MR already exists' });
+
+// Main controller function (Express style)
+async function runAutomergeAndGetMRs(req, res) {
+  try {
+    const actionLog = [];
+    const projects = await getAllProjects();
+    for (const project of projects) {
+      const projectId = project.id;
+      const branchesToCheck = [
+        { source: 'main', target: 'development' },
+        { source: 'development', target: 'production' },
+      ];
+      for (const { source, target } of branchesToCheck) {
+        const sourceExists = await branchExists(projectId, source);
+        const targetExists = await branchExists(projectId, target);
+        if (!sourceExists || !targetExists) {
+          actionLog.push({ name: project.name, source, target, action: 'Missing branch' });
           continue;
         }
-        const changes = comparison.commits.map(commit => `- ${commit.title}`).join('\n');
-        const description = `Changes from ${source} to ${target} include:\n${changes}`;
-        const hasDependencyUpdate = comparison.commits.some(commit => commit.title.includes('chore(deps)'));
-        const labels = hasDependencyUpdate ? ['Dependency Updates'] : [];
-        const result = await createMergeRequest(projectId, source, target, description, labels);
-        actionLog.push({ name: project.name, source, target, action: 'MR Created', mr: result.response ? result.response.data : null });
-      } else {
-        actionLog.push({ name: project.name, source, target, action: 'No changes' });
+        const comparison = await getComparison(projectId, source, target);
+        if (comparison.commits.length > 0) {
+          const alreadyExists = await hasOpenMergeRequest(projectId, source, target);
+          if (alreadyExists) {
+            actionLog.push({ name: project.name, source, target, action: 'MR already exists' });
+            continue;
+          }
+          const changes = comparison.commits.map(commit => `- ${commit.title}`).join('\n');
+          const description = `Changes from ${source} to ${target} include:\n${changes}`;
+          const hasDependencyUpdate = comparison.commits.some(commit => commit.title.includes('chore(deps)'));
+          const labels = hasDependencyUpdate ? ['Dependency Updates'] : [];
+          const result = await createMergeRequest(projectId, source, target, description, labels);
+          actionLog.push({ name: project.name, source, target, action: 'MR Created', mr: result.response ? result.response.data : null });
+        } else {
+          actionLog.push({ name: project.name, source, target, action: 'No changes' });
+        }
       }
     }
+    // Return only the MRs that were created (with MR info)
+    const createdMRs = actionLog.filter(e => e.action === 'MR Created').map(e => ({
+      project: e.name,
+      source: e.source,
+      target: e.target,
+      mrId: e.mr ? e.mr.iid : null,
+      mrUrl: e.mr ? e.mr.web_url : null,
+      title: e.mr ? e.mr.title : null,
+      description: e.mr ? e.mr.description : null,
+    }));
+    return res.json({ success: true, data: createdMRs });
+  } catch (e) {
+    return res.status(500).json({ success: false, error: e.message });
   }
-  // Return only the MRs that were created (with MR info)
-  return actionLog.filter(e => e.action === 'MR Created').map(e => ({
-    project: e.name,
-    source: e.source,
-    target: e.target,
-    mrId: e.mr ? e.mr.iid : null,
-    mrUrl: e.mr ? e.mr.web_url : null,
-    title: e.mr ? e.mr.title : null,
-    description: e.mr ? e.mr.description : null,
-  }));
 }
 
 module.exports = { runAutomergeAndGetMRs };

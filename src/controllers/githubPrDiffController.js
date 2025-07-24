@@ -14,8 +14,16 @@ async function githubApiRequest(path, accept = 'application/vnd.github.v3+json')
   return response.data;
 }
 
-async function listPullRequests(owner, repo) {
-  return githubApiRequest(`/repos/${owner}/${repo}/pulls?state=open`);
+function splitDiffByFile(diffText) {
+  if (!diffText || typeof diffText !== 'string') throw new Error('Invalid diff text received');
+  const files = diffText.split('diff --git ');
+  const fileDiffs = {};
+  files.slice(1).forEach((block) => {
+    const headerLine = block.split('\n')[0];
+    const filename = headerLine.split(' b/').pop().trim();
+    fileDiffs[filename] = `diff --git ${block.trim()}`;
+  });
+  return fileDiffs;
 }
 
 // Helper to fetch from a full URL (handles redirects)
@@ -32,29 +40,30 @@ async function fetchFromUrl(fullUrl, accept = 'application/vnd.github.v3.diff') 
   return response.data;
 }
 
-async function fetchPRDiff(owner, repo, prNumber) {
-  const pr = await githubApiRequest(`/repos/${owner}/${repo}/pulls/${prNumber}`);
-  if (!pr.diff_url) throw new Error('No diff URL found.');
-  console.log('[githubPrDiffController] PR', prNumber, 'diff_url:', pr.diff_url); // eslint-disable-line no-console
-  const diff = await fetchFromUrl(pr.diff_url, 'application/vnd.github.v3.diff');
-  console.log('[githubPrDiffController] PR', prNumber, 'diff length:', diff.length); // eslint-disable-line no-console
-  return diff;
+async function listPullRequests(req, res) {
+  const { owner, repo } = req.query;
+  try {
+    const pulls = await githubApiRequest(`/repos/${owner}/${repo}/pulls?state=open`);
+    return res.json({ success: true, data: pulls });
+  } catch (e) {
+    return res.status(500).json({ success: false, error: e.message });
+  }
 }
 
-function splitDiffByFile(diffText) {
-  if (!diffText || typeof diffText !== 'string') throw new Error('Invalid diff text received');
-  const files = diffText.split('diff --git ');
-  const fileDiffs = {};
-  files.slice(1).forEach((block) => {
-    const headerLine = block.split('\n')[0];
-    const filename = headerLine.split(' b/').pop().trim();
-    fileDiffs[filename] = `diff --git ${block.trim()}`;
-  });
-  return fileDiffs;
+async function fetchPRDiff(req, res) {
+  const { owner, repo, prNumber } = req.query;
+  try {
+    const pr = await githubApiRequest(`/repos/${owner}/${repo}/pulls/${prNumber}`);
+    if (!pr.diff_url) throw new Error('No diff URL found.');
+    const diffText = await fetchFromUrl(pr.diff_url, 'application/vnd.github.v3.diff');
+    const fileDiffs = splitDiffByFile(diffText);
+    return res.json({ success: true, data: { prNumber, fileDiffs } });
+  } catch (e) {
+    return res.status(500).json({ success: false, error: e.message });
+  }
 }
 
 module.exports = {
   listPullRequests,
   fetchPRDiff,
-  splitDiffByFile,
 };

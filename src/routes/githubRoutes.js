@@ -26,14 +26,6 @@ const prDiffSchema = {
 };
 
 router.get('/prs', validate(prListSchema, 'query'), controllers.githubPrDiffController.listPullRequests);
-router.get('/pr-diff', validate(prDiffSchema, 'query'), async (req, res) => {
-  try {
-    const diffText = await controllers.githubPrDiffController.fetchPRDiff(req.query.owner, req.query.repo, req.query.prNumber);
-    const fileDiffs = controllers.githubPrDiffController.splitDiffByFile(diffText);
-    return res.json({ success: true, data: { prNumber: req.query.prNumber, fileDiffs } });
-  } catch (e) {
-    return res.status(500).json({ success: false, error: e.message });
-  }
-});
+router.get('/pr-diff', validate(prDiffSchema, 'query'), controllers.githubPrDiffController.fetchPRDiff);
 
 module.exports = router;
