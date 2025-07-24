@@ -18,4 +18,10 @@ describe('Server startup', () => {
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/javascript/);
   });
+
+  test('GET /index.css serves frontend styles', async () => {
+    const res = await request(app).get('/index.css');
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toMatch(/css/);
+  });
 });
