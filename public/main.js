@@ -3,6 +3,24 @@ let pipelineStatusCountdownInterval = null;
 let foreverActive = false;
 let secondsToNextRefresh = 60;
 
+function setupTabs() {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabSections = {
+    code: document.getElementById('tab-code'),
+    networking: document.getElementById('tab-networking'),
+    finance: document.getElementById('tab-finance'),
+  };
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      Object.keys(tabSections).forEach(key => {
+        tabSections[key].style.display = btn.dataset.tab === key ? '' : 'none';
+      });
+    });
+  });
+}
+
 async function runPipelineStatus(forever = false) {
   if (pipelineStatusInterval) {
     clearInterval(pipelineStatusInterval);
@@ -42,6 +60,7 @@ async function fetchAndRender() {
       if (foreverActive) {
         outputDiv.innerHTML += renderCountdown();
       }
+      attachOutputEvents();
     } else if (result.success) {
       outputDiv.textContent = JSON.stringify(result.data, null, 2);
     } else {
@@ -105,6 +124,7 @@ async function runAutomerge() {
     const result = await res.json();
     if (result.success && Array.isArray(result.data)) {
       outputDiv.innerHTML = renderAutomergeTable(result.data);
+      attachOutputEvents();
     } else if (result.success) {
       outputDiv.textContent = JSON.stringify(result.data, null, 2);
     } else {
@@ -128,7 +148,7 @@ function renderPipelineTable(data) {
     html += `<td>${Array.isArray(row.jobs) ? row.jobs.map(j => `${j.name || ''} <span style='color:${jobColor(j.status)}'>[${j.status || ''}]</span>`).join('<br>') : ''}</td>`;
     html += `<td>`;
     if (row.webUrl) {
-      html += `<button class="script-btn" onclick="window.open('${row.webUrl}','_blank')">View</button>`;
+      html += `<button class="script-btn open-external" data-href="${row.webUrl}">View</button>`;
     } else {
       html += '-';
     }
@@ -165,6 +185,26 @@ function jobColor(status) {
   if (status === 'created') return 'pink';
   return 'black';
 }
+
+function attachOutputEvents() {
+  const output = document.getElementById('output');
+  output.querySelectorAll('.open-external').forEach(btn => {
+    const href = btn.dataset.href;
+    btn.addEventListener('click', () => window.open(href, '_blank'));
+  });
+  output.querySelectorAll('.view-pr-diff-btn').forEach(btn => {
+    const pr = btn.dataset.pr;
+    btn.addEventListener('click', () => showPrDiff(pr));
+  });
+  output.querySelectorAll('.back-to-pr-list-btn').forEach(btn => {
+    btn.addEventListener('click', backToPrList);
+  });
+  output.querySelectorAll('.toggle-zone-records-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      toggleAzureZoneRecords(btn.dataset.group, btn.dataset.zone, btn.dataset.zoneid);
+    });
+  });
+}
 function setActiveAutomationButton(btnId) {
   const allBtns = document.querySelectorAll('.script-btn');
   allBtns.forEach(btn => btn.classList.remove('active-automation'));
@@ -172,20 +212,20 @@ function setActiveAutomationButton(btnId) {
   if (btn) btn.classList.add('active-automation');
 }
 
-document.getElementById('pipeline-status-btn').onclick = () => {
+document.getElementById('pipeline-status-btn').addEventListener('click', () => {
   setActiveAutomationButton('pipeline-status-btn');
   stopForever();
   runPipelineStatus(false);
-};
-document.getElementById('pipeline-status-forever-btn').onclick = () => {
+});
+document.getElementById('pipeline-status-forever-btn').addEventListener('click', () => {
   setActiveAutomationButton('pipeline-status-forever-btn');
   runPipelineStatus(true);
-};
-document.getElementById('stop-forever-btn').onclick = stopForever;
-document.getElementById('automerge-btn').onclick = () => {
+});
+document.getElementById('stop-forever-btn').addEventListener('click', stopForever);
+document.getElementById('automerge-btn').addEventListener('click', () => {
   setActiveAutomationButton('automerge-btn');
   runAutomerge();
-};
+});
 
 // --- GitHub PR Diff UI ---
 const githubPrState = { owner: '', repo: '', prs: [], prDiff: null };
@@ -222,6 +262,7 @@ async function fetchAndShowPrs(owner, repo) {
     if (result.success && Array.isArray(result.data)) {
       githubPrState.prs = result.data;
       prListDiv.innerHTML = renderPrList(result.data);
+      attachOutputEvents();
     } else {
       prListDiv.innerHTML = `<span class="loading">${result.error || 'Failed to load PRs.'}</span>`;
     }
@@ -238,14 +279,14 @@ function renderPrList(prs) {
     html += `<td>${pr.number}</td>`;
     html += `<td>${pr.title}</td>`;
     html += `<td>${pr.user && pr.user.login ? pr.user.login : ''}</td>`;
-    html += `<td><button class="script-btn" onclick="window.showPrDiff(${pr.number})">View Diff</button></td>`;
+    html += `<td><button class="script-btn view-pr-diff-btn" data-pr="${pr.number}">View Diff</button></td>`;
     html += `</tr>`;
   }
   html += `</tbody></table>`;
   return html;
 }
 
-window.showPrDiff = async function(prNumber) {
+async function showPrDiff(prNumber) {
   const prListDiv = document.getElementById('github-pr-list');
   prListDiv.innerHTML = '<span class="loading">Loading diff...<span class="spinner"></span></span>';
   try {
@@ -254,16 +295,17 @@ window.showPrDiff = async function(prNumber) {
     if (result.success && result.data && result.data.fileDiffs) {
       githubPrState.prDiff = result.data;
       prListDiv.innerHTML = renderPrDiff(result.data, prNumber);
+      attachOutputEvents();
     } else {
       prListDiv.innerHTML = `<span class="loading">${result.error || 'Failed to load diff.'}</span>`;
     }
   } catch {
     prListDiv.innerHTML = '<span class="loading">Error loading diff.</span>';
   }
-};
+}
 
 function renderPrDiff(data, prNumber) {
-  let html = `<button class="script-btn" onclick="window.backToPrList()">Back to PR List</button>`;
+  let html = `<button class="script-btn back-to-pr-list-btn">Back to PR List</button>`;
   html += `<h3 style="margin-top:1em;">Diff for PR #${prNumber}</h3>`;
   if (!data.fileDiffs || (typeof data.fileDiffs === 'object' && Object.keys(data.fileDiffs).length === 0)) {
     html += '<em>No diff data found for this PR.</em>';
@@ -284,44 +326,45 @@ function renderPrDiff(data, prNumber) {
   return html;
 }
 
-window.backToPrList = function() {
+function backToPrList() {
   const prListDiv = document.getElementById('github-pr-list');
   prListDiv.innerHTML = renderPrList(githubPrState.prs);
-};
+  attachOutputEvents();
+}
 
 function escapeHtml(text) {
   return text.replace(/[&<>]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c]));
 }
 
-document.getElementById('github-pr-diff-btn').onclick = () => {
+document.getElementById('github-pr-diff-btn').addEventListener('click', () => {
   setActiveAutomationButton('github-pr-diff-btn');
   showGithubPrForm();
-};
+});
 
 // --- GitLab Assigned MRs UI ---
-document.getElementById('gitlab-assigned-mrs-btn').onclick = () => {
+document.getElementById('gitlab-assigned-mrs-btn').addEventListener('click', () => {
   setActiveAutomationButton('gitlab-assigned-mrs-btn');
   showGitlabAssignedMrsForm();
-};
+});
 
 // --- Azure DNS Zones UI ---
-document.getElementById('azure-dns-zones-btn').onclick = () => {
+document.getElementById('azure-dns-zones-btn').addEventListener('click', () => {
   setActiveAutomationButton('azure-dns-zones-btn');
   fetchAndShowAzureDnsZones();
-};
+});
 
 // --- Namecheap Domains UI ---
 
-document.getElementById('namecheap-domains-btn').onclick = () => {
+document.getElementById('namecheap-domains-btn').addEventListener('click', () => {
   setActiveAutomationButton('namecheap-domains-btn');
   fetchAndShowNamecheapDomains();
-};
+});
 
 // --- Wave Customers UI ---
-document.getElementById('wave-customers-btn').onclick = () => {
+document.getElementById('wave-customers-btn').addEventListener('click', () => {
   setActiveAutomationButton('wave-customers-btn');
   fetchAndShowWaveCustomers();
-};
+});
 
 async function fetchAndShowWaveCustomers() {
   const outputDiv = document.getElementById('output');
@@ -333,7 +376,7 @@ async function fetchAndShowWaveCustomers() {
       outputDiv.innerHTML = renderWaveCustomersTable(result.data);
       // Attach event listeners for invoice buttons
       document.querySelectorAll('.wave-list-invoices-btn').forEach(btn => {
-        btn.onclick = function() {
+        btn.addEventListener('click', function() {
           const customerId = this.dataset.customerId;
           const row = this.closest('tr');
           const nextRow = row.nextElementSibling;
@@ -362,10 +405,10 @@ async function fetchAndShowWaveCustomers() {
                 invoiceRow.innerHTML = `<td colspan="3">${renderWaveInvoicesTable(data.data)}${renderWaveInvoicesPagination(data.pageInfo, page)}</td>`;
                 // Attach pagination event listeners
                 invoiceRow.querySelectorAll('.wave-invoice-page-btn').forEach(pbtn => {
-                  pbtn.onclick = function() {
+                  pbtn.addEventListener('click', function() {
                     const newPage = parseInt(this.dataset.page, 10);
                     fetchAndRenderInvoicesPage(newPage);
-                  };
+                  });
                 });
               } else {
                 invoiceRow.innerHTML = `<td colspan="3">${data.error || 'Failed to load invoices.'}</td>`;
@@ -375,7 +418,7 @@ async function fetchAndShowWaveCustomers() {
             }
           }
           fetchAndRenderInvoicesPage(1);
-        };
+        });
       });
     }
   } catch {
@@ -446,6 +489,7 @@ async function fetchAndShowNamecheapDomains() {
     const result = await res.json();
     if (result.success && Array.isArray(result.data)) {
       outputDiv.innerHTML = renderNamecheapDomainsTable(result.data);
+      attachOutputEvents();
     } else if (result.success) {
       outputDiv.textContent = JSON.stringify(result.data, null, 2);
     } else {
@@ -472,7 +516,7 @@ function renderNamecheapDomainsTable(domains) {
     html += `<td>${d.isPremium ? 'Yes' : 'No'}</td>`;
     html += `<td>${d.isOurDNS ? 'Yes' : 'No'}</td>`;
     const ncUrl = `https://ap.www.namecheap.com/domains/domaincontrolpanel/${encodeURIComponent(d.domain)}/domain`;
-    html += `<td><button class="script-btn" onclick="window.open('${ncUrl}','_blank')">Open in Namecheap</button></td>`;
+    html += `<td><button class="script-btn open-external" data-href="${ncUrl}">Open in Namecheap</button></td>`;
     html += `</tr>`;
   }
   html += `</tbody></table>`;
@@ -497,6 +541,7 @@ async function fetchAndShowAzureDnsZones() {
         }
       }));
       outputDiv.innerHTML = renderAzureDnsZonesTable(zonesWithCounts);
+      attachOutputEvents();
     } else if (result.success) {
       outputDiv.textContent = JSON.stringify(result.data, null, 2);
     } else {
@@ -523,8 +568,8 @@ function renderAzureDnsZonesTable(zones) {
     for (const key of tagKeys) html += `<td>${zone.tags && zone.tags[key] ? zone.tags[key] : '-'}</td>`;
     html += `<td>${zone.recordCount !== null && zone.recordCount !== undefined ? zone.recordCount : '-'}</td>`;
     const portalUrl = `https://portal.azure.com/#@/resource/subscriptions/${encodeURIComponent(zone.subscriptionId || (window.AZURE_SUBSCRIPTION_ID || ''))}/resourceGroups/${encodeURIComponent(zone.resourceGroup)}/providers/Microsoft.Network/dnszones/${encodeURIComponent(zone.name)}`;
-    html += `<td><button class="script-btn" onclick="window.open('${portalUrl}','_blank')">Open in Portal</button></td>`;
-    html += `<td><button class="script-btn" id="${zoneId}-toggle-btn" onclick="window.toggleAzureZoneRecords('${zone.resourceGroup}','${zone.name}','${zoneId}')">Show Records</button></td>`;
+    html += `<td><button class="script-btn open-external" data-href="${portalUrl}">Open in Portal</button></td>`;
+    html += `<td><button class="script-btn toggle-zone-records-btn" id="${zoneId}-toggle-btn" data-group="${zone.resourceGroup}" data-zone="${zone.name}" data-zoneid="${zoneId}">Show Records</button></td>`;
     html += `</tr>`;
     html += `<tr id="${zoneId}-records-row" style="display:none;"><td colspan="${5 + tagKeys.length}"></td></tr>`;
   }
@@ -533,7 +578,7 @@ function renderAzureDnsZonesTable(zones) {
 }
 
 
-window.toggleAzureZoneRecords = async function(resourceGroup, zoneName, zoneId) {
+async function toggleAzureZoneRecords(resourceGroup, zoneName, zoneId) {
   const row = document.getElementById(`${zoneId}-records-row`);
   const btn = document.getElementById(`${zoneId}-toggle-btn`);
   if (!row || !btn) return;
@@ -557,7 +602,7 @@ window.toggleAzureZoneRecords = async function(resourceGroup, zoneName, zoneId) 
   } catch {
     row.firstElementChild.innerHTML = 'Error loading records.';
   }
-};
+}
 
 function renderAzureZoneRecordsTable(records) {
   if (!records.length) return '<em>No records found for this zone.</em>';
@@ -614,7 +659,7 @@ async function showGitlabAssignedMrsForm() {
   `;
   // Attach event listeners to buttons
   outputDiv.querySelectorAll('.view-mrs-btn').forEach(btn => {
-    btn.onclick = async function() {
+    btn.addEventListener('click', async function() {
       const username = btn.getAttribute('data-username');
       const rowId = btn.getAttribute('data-rowid');
       const subRow = document.getElementById(`${rowId}-mrs-row`);
@@ -641,7 +686,7 @@ async function showGitlabAssignedMrsForm() {
       } catch {
         subRow.firstElementChild.innerHTML = '<span class="loading">Error loading assigned MRs.</span>';
       }
-    };
+    });
   });
 }
 
@@ -665,7 +710,7 @@ function renderGitlabMrsTable(mrs) {
     html += `<td style="white-space:nowrap;">${mr.author && mr.author.username ? mr.author.username : ''}</td>`;
     html += `<td>`;
     if (mr.web_url) {
-      html += `<button class="script-btn" onclick="window.open('${mr.web_url}','_blank')">View MR</button>`;
+      html += `<button class="script-btn open-external" data-href="${mr.web_url}">View MR</button>`;
     } else {
       html += '-';
     }
@@ -679,3 +724,8 @@ function renderGitlabMrsTable(mrs) {
 function renderCountdown() {
   return `<div id="refresh-countdown" class="loading" style="margin-top:0.5em;">Next refresh in <b>${secondsToNextRefresh}</b> seconds</div>`;
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  setupTabs();
+  attachOutputEvents();
+});

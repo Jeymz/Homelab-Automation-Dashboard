@@ -63,10 +63,9 @@ homelab-automation-dashboard/
 
 ### Security
 
-Helmet's default content security policy blocks inline event handlers.
-The middleware in `src/middleware/security.js` extends the policy with
-`script-src-attr 'unsafe-inline'` so existing `onclick` attributes
-continue to work.
+Helmet is used to add security headers including a strict content security
+policy. Frontend scripts attach all event handlers via JavaScript modules,
+so no inline handlers are needed.
 
 ## API Endpoints
 
