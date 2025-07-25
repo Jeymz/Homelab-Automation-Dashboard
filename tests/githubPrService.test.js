@@ -2,7 +2,7 @@
 /* eslint-disable no-undef */
 const axios = require('axios');
 jest.mock('axios');
-const githubService = require('../src/services').github;
+const githubService = require('../src/services/github');
 
 describe('githubPrService', () => {
   afterEach(() => {
