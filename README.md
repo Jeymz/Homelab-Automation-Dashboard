@@ -1,5 +1,7 @@
 # Homelab Automation Dashboard
 
+![Homelab Automation Dashboard](public/Images/Homelab%20Automation%20Manager.png)
+
 ## Overview
 
 The Homelab Automation Dashboard is a Node.js-based web application designed to automate and monitor various DevOps and CI/CD tasks across platforms like GitHub and GitLab. It provides a unified dashboard and API endpoints for managing pull requests, merge requests, pipelines, and automerge operations.
