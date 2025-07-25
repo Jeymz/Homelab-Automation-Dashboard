@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-async function listWaveCustomerInvoices(customerId, page = 1, pageSize = 5) {
+exports.getCustomerInvoices = async function getCustomerInvoices(customerId, page = 1, pageSize = 5) {
   const apiKey = process.env.WAVE_API_KEY;
   const businessId = process.env.WAVE_BUSINESS_ID;
   if (!apiKey || !businessId) {
@@ -37,9 +37,9 @@ async function listWaveCustomerInvoices(customerId, page = 1, pageSize = 5) {
   }) : [];
   const pageInfo = invoicesData && invoicesData.pageInfo ? invoicesData.pageInfo : { currentPage: 1, totalPages: 1, totalCount: invoices.length };
   return { invoices, pageInfo };
-}
+};
 
-async function listWaveCustomers() {
+exports.getCustomers = async function getCustomers() {
   const apiKey = process.env.WAVE_API_KEY;
   const businessId = process.env.WAVE_BUSINESS_ID;
   if (!apiKey || !businessId) {
@@ -61,9 +61,4 @@ async function listWaveCustomers() {
     ? response.data.data.business.customers.edges.map(edge => ({ id: edge.node.id, name: edge.node.name, email: edge.node.email }))
     : [];
   return customers;
-}
-
-module.exports = {
-  listWaveCustomers,
-  listWaveCustomerInvoices,
 };

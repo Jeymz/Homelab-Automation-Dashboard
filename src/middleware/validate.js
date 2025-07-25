@@ -10,7 +10,7 @@ addFormats(ajv);
  * @param {object} schema Ajv schema
  * @param {string} [property='body'] Request property to validate
  */
-function validate(schema, property = 'body') {
+module.exports = function validate(schema, property = 'body') {
   const validateFn = ajv.compile(schema);
   return (req, res, next) => {
     const valid = validateFn(req[property]);
@@ -19,6 +19,4 @@ function validate(schema, property = 'body') {
     }
     return next();
   };
-}
-
-module.exports = validate;
+};

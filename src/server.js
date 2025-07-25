@@ -1,12 +1,7 @@
 const path = require('path');
 const express = require('express');
-const security = require('./middleware/security');
-
-const gitlabRoutes = require('./routes/gitlabRoutes');
-const githubRoutes = require('./routes/githubRoutes');
-const azureRoutes = require('./routes/azureRoutes');
-const namecheapRoutes = require('./routes/namecheapRoutes');
-const waveRoutes = require('./routes/waveRoutes');
+const { security } = require('./middleware');
+const routes = require('./routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,13 +9,13 @@ const PORT = process.env.PORT || 3000;
 app.use(security());
 
 // Serve static files
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(process.cwd(), 'public')));
 
-app.use('/api/gitlab', gitlabRoutes);
-app.use('/api/github', githubRoutes);
-app.use('/api/azure', azureRoutes);
-app.use('/api/namecheap', namecheapRoutes);
-app.use('/api/wave', waveRoutes);
+app.use('/api/gitlab', routes.gitlab);
+app.use('/api/github', routes.github);
+app.use('/api/azure', routes.azure);
+app.use('/api/namecheap', routes.namecheap);
+app.use('/api/wave', routes.wave);
 
 if (require.main === module) {
   app.listen(PORT, () => {

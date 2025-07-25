@@ -1,4 +1,4 @@
-function splitDiffByFile(diffText) {
+exports.splitDiffByFile = function splitDiffByFile(diffText) {
   if (!diffText || typeof diffText !== 'string') throw new Error('Invalid diff text received');
   const files = diffText.split('diff --git ');
   const fileDiffs = {};
@@ -8,6 +8,4 @@ function splitDiffByFile(diffText) {
     fileDiffs[filename] = `diff --git ${block.trim()}`;
   });
   return fileDiffs;
-}
-
-module.exports = { splitDiffByFile };
+};

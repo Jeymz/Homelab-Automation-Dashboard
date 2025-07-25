@@ -1,6 +1,6 @@
 const express = require('express');
-const controllers = require('../controllers');
-const validate = require('../middleware/validate');
+const controller = require('../controllers').github;
+const { validate } = require('../middleware');
 
 const router = express.Router();
 
@@ -25,7 +25,7 @@ const prDiffSchema = {
   additionalProperties: false,
 };
 
-router.get('/prs', validate(prListSchema, 'query'), controllers.githubPrDiffController.listPullRequests);
-router.get('/pr-diff', validate(prDiffSchema, 'query'), controllers.githubPrDiffController.fetchPRDiff);
+router.get('/prs', validate(prListSchema, 'query'), controller.getPRs);
+router.get('/pr-diff', validate(prDiffSchema, 'query'), controller.getPRDiff);
 
 module.exports = router;

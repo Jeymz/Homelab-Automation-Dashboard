@@ -1,7 +1,7 @@
 const axios = require('axios');
 const { parseStringPromise } = require('xml2js');
 
-async function listNamecheapDomains() {
+exports.getDomains = async function getDomains() {
   const apiUser = process.env.NAMECHEAP_API_USER;
   const apiKey = process.env.NAMECHEAP_API_KEY;
   const username = process.env.NAMECHEAP_USERNAME;
@@ -40,6 +40,4 @@ async function listNamecheapDomains() {
     isPremium: d.$.IsPremium === 'true',
     isOurDNS: d.$.IsOurDNS === 'true',
   }));
-}
-
-module.exports = { listNamecheapDomains };
+};

@@ -1,6 +1,6 @@
 const express = require('express');
-const controllers = require('../controllers');
-const validate = require('../middleware/validate');
+const controller = require('../controllers').azure;
+const { validate } = require('../middleware');
 
 const router = express.Router();
 
@@ -15,7 +15,7 @@ const recordsSchema = {
   additionalProperties: false,
 };
 
-router.get('/dns-zones', controllers.azureDnsZonesController.getDnsZonesTable);
-router.get('/dns-zones/records', validate(recordsSchema, 'query'), controllers.azureDnsZoneRecordsController.getDnsZoneRecordCount);
+router.get('/dns-zones', controller.getDNSZones);
+router.get('/dns-zones/records', validate(recordsSchema, 'query'), controller.getDNSZones_Records);
 
 module.exports = router;
