@@ -1,7 +1,7 @@
 const { DefaultAzureCredential } = require('@azure/identity');
 const { DnsManagementClient } = require('@azure/arm-dns');
 
-async function listDnsZonesWithTags() {
+exports.getDNSZones = async function getDNSZones() {
   const subscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
   if (!subscriptionId) {
     throw new Error('AZURE_SUBSCRIPTION_ID must be set in environment variables.');
@@ -19,9 +19,9 @@ async function listDnsZonesWithTags() {
     });
   }
   return zones;
-}
+};
 
-async function getDnsZoneRecordData(subscriptionId, resourceGroup, zoneName, all) {
+exports.getDNSZoneRecords = async function listDnsZoneRecords(subscriptionId, resourceGroup, zoneName, all) {
   const credential = new DefaultAzureCredential();
   const client = new DnsManagementClient(credential, subscriptionId);
   if (all) {
@@ -56,9 +56,4 @@ async function getDnsZoneRecordData(subscriptionId, resourceGroup, zoneName, all
     count++;
   }
   return { count };
-}
-
-module.exports = {
-  listDnsZonesWithTags,
-  getDnsZoneRecordData,
 };

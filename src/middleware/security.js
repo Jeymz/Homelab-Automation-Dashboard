@@ -1,7 +1,5 @@
 const helmet = require('helmet');
 
-function security() {
+module.exports = function security() {
   return helmet();
-}
-
-module.exports = security;
+};

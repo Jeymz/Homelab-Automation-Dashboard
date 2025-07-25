@@ -35,41 +35,6 @@ async function getAllProjects() {
   return projects;
 }
 
-async function listGitlabUsers() {
-  const data = await apiGet('/users', { params: { per_page: 100, active: true } });
-  return data.map(u => ({ username: u.username, name: u.name, id: u.id }));
-}
-
-async function listAssignedMrs(username) {
-  const data = await apiGet('/merge_requests', {
-    params: {
-      scope: 'assigned_to_me',
-      state: 'opened',
-      per_page: 100,
-      assignee_username: encodeURIComponent(username),
-    },
-  });
-  return data.map(mr => {
-    let project_group = '';
-    let project_name = '';
-    if (mr.references && mr.references.full) {
-      const match = mr.references.full.match(/^(.+?)\/([^!]+)!/);
-      if (match) {
-        project_group = match[1];
-        project_name = match[2];
-      }
-    } else if (mr.project_id && mr.web_url) {
-      const urlParts = mr.web_url.split('/');
-      const groupIdx = urlParts.indexOf('https:') === 0 ? 3 : 2;
-      if (urlParts.length > groupIdx + 2) {
-        project_group = urlParts[groupIdx];
-        project_name = urlParts[groupIdx + 1];
-      }
-    }
-    return { ...mr, project_group, project_name };
-  });
-}
-
 async function getInProgressPipelines(projectId) {
   const running = await apiGet(`/projects/${encodeURIComponent(projectId)}/pipelines`, { params: { per_page: 10, status: 'running' } });
   const pending = await apiGet(`/projects/${encodeURIComponent(projectId)}/pipelines`, { params: { per_page: 10, status: 'pending' } });
@@ -78,33 +43,6 @@ async function getInProgressPipelines(projectId) {
 
 async function getPipelineJobs(projectId, pipelineId) {
   return apiGet(`/projects/${encodeURIComponent(projectId)}/pipelines/${pipelineId}/jobs`);
-}
-
-async function getPipelineStatusTable() {
-  const projects = await getAllProjects();
-  const result = [];
-  for (const project of projects) {
-    const inProgress = await getInProgressPipelines(project.id);
-    for (const p of inProgress) {
-      let jobs = [];
-      try {
-        jobs = await getPipelineJobs(project.id, p.id);
-      } catch (err) {
-        console.error(`[gitlabService] Error fetching jobs for pipeline ${p.id} in project ${project.name}:`, err.message); // eslint-disable-line no-console
-        continue;
-      }
-      const completion = computeCompletion(jobs);
-      result.push({
-        project: project.name_with_namespace,
-        pipelineId: p.id,
-        status: p.status,
-        webUrl: p.web_url,
-        jobs: jobs.map(j => ({ name: j.name, status: j.status })),
-        completion,
-      });
-    }
-  }
-  return result;
 }
 
 async function branchExists(projectId, branch) {
@@ -134,7 +72,69 @@ async function createMergeRequest(projectId, source, target, description, labels
   return apiPost(`/projects/${encodeURIComponent(projectId)}/merge_requests`, data);
 }
 
-async function runAutomergeAndGetMRs() {
+exports.getUsers = async function getUsers() {
+  const data = await apiGet('/users', { params: { per_page: 100, active: true } });
+  return data.map(u => ({ username: u.username, name: u.name, id: u.id }));
+};
+
+exports.getAssignedMergeRequests = async function getAssignedMergeRequests(username) {
+  const data = await apiGet('/merge_requests', {
+    params: {
+      scope: 'assigned_to_me',
+      state: 'opened',
+      per_page: 100,
+      assignee_username: encodeURIComponent(username),
+    },
+  });
+  return data.map(mr => {
+    let project_group = '';
+    let project_name = '';
+    if (mr.references && mr.references.full) {
+      const match = mr.references.full.match(/^(.+?)\/([^!]+)!/);
+      if (match) {
+        project_group = match[1];
+        project_name = match[2];
+      }
+    } else if (mr.project_id && mr.web_url) {
+      const urlParts = mr.web_url.split('/');
+      const groupIdx = urlParts.indexOf('https:') === 0 ? 3 : 2;
+      if (urlParts.length > groupIdx + 2) {
+        project_group = urlParts[groupIdx];
+        project_name = urlParts[groupIdx + 1];
+      }
+    }
+    return { ...mr, project_group, project_name };
+  });
+};
+
+exports.getPipelineStatuses = async function getPipelineStatuses() {
+  const projects = await getAllProjects();
+  const result = [];
+  for (const project of projects) {
+    const inProgress = await getInProgressPipelines(project.id);
+    for (const p of inProgress) {
+      let jobs = [];
+      try {
+        jobs = await getPipelineJobs(project.id, p.id);
+      } catch (err) {
+        console.error(`[gitlabService] Error fetching jobs for pipeline ${p.id} in project ${project.name}:`, err.message); // eslint-disable-line no-console
+        continue;
+      }
+      const completion = computeCompletion(jobs);
+      result.push({
+        project: project.name_with_namespace,
+        pipelineId: p.id,
+        status: p.status,
+        webUrl: p.web_url,
+        jobs: jobs.map(j => ({ name: j.name, status: j.status })),
+        completion,
+      });
+    }
+  }
+  return result;
+};
+
+exports.createAutoMergeRequests = async function createAutoMergeRequests() {
   const actionLog = [];
   const projects = await getAllProjects();
   for (const project of projects) {
@@ -177,11 +177,4 @@ async function runAutomergeAndGetMRs() {
     title: e.mr ? e.mr.title : null,
     description: e.mr ? e.mr.description : null,
   }));
-}
-
-module.exports = {
-  listGitlabUsers,
-  listAssignedMrs,
-  getPipelineStatusTable,
-  runAutomergeAndGetMRs,
 };
