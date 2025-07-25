@@ -33,6 +33,7 @@ A simple tabbed interface organizes your automation tasks.
    ```sh
    npm install
    ```
+
 3. Copy `.env.example` to `.env` and fill in your credentials.
 
 4. Start the dashboard:
@@ -62,7 +63,6 @@ Create a `.env` file based on `.env.example` with the following values:
 - `NAMECHEAP_CLIENT_IP` - Whitelisted IP for Namecheap API access
 - `WAVE_API_KEY` - Wave Accounting API key
 - `WAVE_BUSINESS_ID` - ID of the Wave business to query
-
 
 ## Testing
 
@@ -124,12 +124,12 @@ The following endpoints are available (see `src/routes/` for route definitions a
 
 - `/api/wave/customers` — Get Wave customers
 - `/api/wave/customers/:customerId/invoices` — Get invoices for a specific Wave customer
+
 ## How to Add a New Automation Tile
 
 1. Add a button inside the appropriate tab in `public/index.html`.
 2. Register a click handler in `public/main.js` that calls your Express endpoint.
 3. Implement the backend route, controller, and service under `src/` to perform the automation.
-
 
 ## Contributing
 
