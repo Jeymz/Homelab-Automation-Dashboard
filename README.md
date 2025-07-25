@@ -6,6 +6,12 @@
 
 The Homelab Automation Dashboard is a Node.js-based web application designed to automate and monitor various DevOps and CI/CD tasks across platforms like GitHub and GitLab. It provides a unified dashboard and API endpoints for managing pull requests, merge requests, pipelines, and automerge operations.
 
+## Dashboard Overview
+
+A simple tabbed interface organizes your automation tasks.
+
+![Dashboard Screenshot](public/Images/Homelab%20Automation%20Manager.png)
+
 ## Features
 
 - Unified dashboard for GitHub and GitLab automation
@@ -27,16 +33,36 @@ The Homelab Automation Dashboard is a Node.js-based web application designed to 
    ```sh
    npm install
    ```
+3. Copy `.env.example` to `.env` and fill in your credentials.
+
+4. Start the dashboard:
+
+   ```sh
+   npm start
+   ```
 
 ## Usage
 
-Start the server:
-
-```sh
-npm start
-```
-
 The dashboard will be available at [http://localhost:3000](http://localhost:3000) by default (check your `server.js` for the actual port).
+
+## Environment Variables
+
+Create a `.env` file based on `.env.example` with the following values:
+
+- `GITLAB_API_URL` - Base URL for your GitLab instance
+- `GITLAB_TOKEN` - Personal access token used for API calls
+- `GITLAB_ASSIGNEE_ID` - Numeric assignee ID for filtering merge requests
+- `AZURE_SUBSCRIPTION_ID` - Azure subscription ID
+- `AZURE_TENANT_ID` - Azure tenant ID
+- `AZURE_CLIENT_ID` - Application (client) ID for Azure authentication
+- `AZURE_CLIENT_SECRET` - Client secret for the Azure app registration
+- `NAMECHEAP_API_USER` - Namecheap API username
+- `NAMECHEAP_API_KEY` - Namecheap API key
+- `NAMECHEAP_USERNAME` - Your Namecheap account username
+- `NAMECHEAP_CLIENT_IP` - Whitelisted IP for Namecheap API access
+- `WAVE_API_KEY` - Wave Accounting API key
+- `WAVE_BUSINESS_ID` - ID of the Wave business to query
+
 
 ## Testing
 
@@ -98,6 +124,12 @@ The following endpoints are available (see `src/routes/` for route definitions a
 
 - `/api/wave/customers` — Get Wave customers
 - `/api/wave/customers/:customerId/invoices` — Get invoices for a specific Wave customer
+## How to Add a New Automation Tile
+
+1. Add a button inside the appropriate tab in `public/index.html`.
+2. Register a click handler in `public/main.js` that calls your Express endpoint.
+3. Implement the backend route, controller, and service under `src/` to perform the automation.
+
 
 ## Contributing
 
