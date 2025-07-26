@@ -6,6 +6,11 @@
 
 The Homelab Automation Dashboard is a Node.js-based web application designed to automate and monitor various DevOps and CI/CD tasks across platforms like GitHub and GitLab. It provides a unified dashboard and API endpoints for managing pull requests, merge requests, pipelines, and automerge operations.
 
+## Requirements
+
+- **Node.js 22+** with npm 10 or later
+- Optional: **Docker** if you prefer container-based development
+
 ## Dashboard Overview
 
 A simple tabbed interface organizes your automation tasks.
@@ -28,7 +33,7 @@ A simple tabbed interface organizes your automation tasks.
    cd homelab-automation-dashboard
    ```
 
-2. Install dependencies:
+2. Ensure Node.js 22 or later is active and install dependencies:
 
    ```sh
    npm install
@@ -36,15 +41,25 @@ A simple tabbed interface organizes your automation tasks.
 
 3. Copy `.env.example` to `.env` and fill in your credentials.
 
-4. Start the dashboard:
+4. Start the dashboard (uses `nodemon` for live reload):
 
    ```sh
    npm start
    ```
+   For a production-style run, execute `node src/server.js` instead.
 
 ## Usage
 
 The dashboard will be available at [http://localhost:3000](http://localhost:3000) by default (check your `server.js` for the actual port).
+
+### Docker
+
+If Docker is installed you can run the app without Node.js installed locally:
+
+```sh
+docker build -t homelab-dashboard .
+docker run --env-file .env -p 3000:3000 homelab-dashboard
+```
 
 ## Environment Variables
 
