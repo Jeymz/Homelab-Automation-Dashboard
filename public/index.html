@@ -14,23 +14,29 @@
     </h1>
     <div class="tab-container" style="margin:2em 0; text-align:center;">
       <div class="tab-bar">
-        <button class="tab-btn active" data-tab="code">Code Maintenance</button>
-        <button class="tab-btn" data-tab="networking">Networking</button>
-        <button class="tab-btn" data-tab="finance">Finance</button>
+        <button class="tab-btn active" data-tab="gitlab">GitLab</button>
+        <button class="tab-btn" data-tab="github">GitHub</button>
+        <button class="tab-btn" data-tab="azure">Azure</button>
+        <button class="tab-btn" data-tab="namecheap">Namecheap</button>
+        <button class="tab-btn" data-tab="wave">Wave</button>
       </div>
-      <div class="script-list" id="tab-code">
+      <div class="script-list" id="tab-gitlab">
         <button class="script-btn" id="pipeline-status-btn">GitLab Pipeline Status</button>
         <button class="script-btn" id="pipeline-status-forever-btn">Pipeline Status (Forever)</button>
         <button class="script-btn" id="stop-forever-btn" style="display:none;background:#f88;">Stop Refresh</button>
         <button class="script-btn" id="automerge-btn">Run Auto-Merge</button>
-        <button class="script-btn" id="github-pr-diff-btn">GitHub PR Diffs</button>
         <button class="script-btn" id="gitlab-assigned-mrs-btn">GitLab Assigned MRs</button>
       </div>
-      <div class="script-list" id="tab-networking" style="display:none;">
+      <div class="script-list" id="tab-github" style="display:none;">
+        <button class="script-btn" id="github-pr-diff-btn">GitHub PR Diffs</button>
+      </div>
+      <div class="script-list" id="tab-azure" style="display:none;">
         <button class="script-btn" id="azure-dns-zones-btn">Azure DNS Zones</button>
+      </div>
+      <div class="script-list" id="tab-namecheap" style="display:none;">
         <button class="script-btn" id="namecheap-domains-btn">Namecheap Domains</button>
       </div>
-      <div class="script-list" id="tab-finance" style="display:none;">
+      <div class="script-list" id="tab-wave" style="display:none;">
         <button class="script-btn" id="wave-customers-btn">Wave Customers</button>
       </div>
     </div>

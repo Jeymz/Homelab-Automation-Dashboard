@@ -6,9 +6,11 @@ let secondsToNextRefresh = 60;
 function setupTabs() {
   const tabBtns = document.querySelectorAll('.tab-btn');
   const tabSections = {
-    code: document.getElementById('tab-code'),
-    networking: document.getElementById('tab-networking'),
-    finance: document.getElementById('tab-finance'),
+    gitlab: document.getElementById('tab-gitlab'),
+    github: document.getElementById('tab-github'),
+    azure: document.getElementById('tab-azure'),
+    namecheap: document.getElementById('tab-namecheap'),
+    wave: document.getElementById('tab-wave'),
   };
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
