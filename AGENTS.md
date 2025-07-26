@@ -27,6 +27,18 @@ src/
 public/           # Static frontend assets
 ```
 
+## Local Development
+
+1. Install **Node.js 22+** and run `npm install` to get dependencies.
+2. Copy `.env.example` to `.env` and update credentials.
+3. Start the server with `npm start` (uses nodemon for hot reload).
+4. Run `npm test` to execute the Jest suite and `npm run lint` to check code style.
+5. Optionally, build a Docker image with:
+   ```sh
+   docker build -t homelab-dashboard .
+   docker run --env-file .env -p 3000:3000 homelab-dashboard
+   ```
+
 ## 🛡️ Coding Trust Contract
 
 These guidelines exist to protect clarity, reduce friction, and invite shared rhythm.
