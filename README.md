@@ -41,7 +41,14 @@ A simple tabbed interface organizes your automation tasks.
 
 3. Copy `.env.example` to `.env` and fill in your credentials.
 
-4. Start the dashboard (uses `nodemon` for live reload):
+4. Install frontend dependencies:
+   ```sh
+   cd homelab-dashboard-ui
+   npm install
+   cd ..
+   ```
+
+5. Start the dashboard (uses `nodemon` for live reload):
 
    ```sh
    npm start
@@ -52,6 +59,14 @@ A simple tabbed interface organizes your automation tasks.
 
 The dashboard will be available at [http://localhost:3000](http://localhost:3000) by default (check your `server.js` for the actual port).
 
+### React UI Development
+Run the Vite dev server for the React frontend:
+```sh
+cd homelab-dashboard-ui
+npm run dev
+```
+The dev server proxies `/api` requests to the Node backend so your React components can call existing endpoints during development.
+
 ### Docker
 
 If Docker is installed you can run the app without Node.js installed locally:
@@ -60,6 +75,14 @@ If Docker is installed you can run the app without Node.js installed locally:
 docker build -t homelab-dashboard .
 docker run --env-file .env -p 3000:3000 homelab-dashboard
 ```
+
+### Building the React UI
+Build the frontend and place the static files under `homelab-dashboard-ui/dist`:
+```sh
+cd homelab-dashboard-ui
+npm run build
+```
+You can then serve the `dist` folder with any static server or copy the files into `public/` to be served by Express.
 
 ## Environment Variables
 
