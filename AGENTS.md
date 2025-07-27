@@ -34,6 +34,7 @@ public/           # Static frontend assets
 3. Start the server with `npm start` (uses nodemon for hot reload).
 4. Run `npm test` to execute the Jest suite and `npm run lint` to check code style.
 5. Optionally, build a Docker image with:
+
    ```sh
    docker build -t homelab-dashboard .
    docker run --env-file .env -p 3000:3000 homelab-dashboard
