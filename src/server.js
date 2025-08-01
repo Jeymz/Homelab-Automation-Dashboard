@@ -11,11 +11,13 @@ app.use(security());
 // Serve static files
 app.use(express.static(path.join(process.cwd(), 'public')));
 
+
 app.use('/api/gitlab', routes.gitlab);
 app.use('/api/github', routes.github);
 app.use('/api/azure', routes.azure);
 app.use('/api/namecheap', routes.namecheap);
 app.use('/api/wave', routes.wave);
+app.use('/api/rabbitmq', routes.rabbitmq);
 
 app.use('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });

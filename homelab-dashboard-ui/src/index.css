@@ -1,3 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-primary: #19762d;
+  --color-accent: #4fc3f7;
+  --color-dark: #181c20;
+  --color-gray-dark: #23272e;
+  --color-gray-darker: #31363f;
+}
+@layer base {
+  body {
+    @apply bg-dark text-gray-200 font-sans;
+  }
+}

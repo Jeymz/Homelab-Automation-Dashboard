@@ -11,6 +11,7 @@ function setupTabs() {
     azure: document.getElementById('tab-azure'),
     namecheap: document.getElementById('tab-namecheap'),
     wave: document.getElementById('tab-wave'),
+    rabbitmq: document.getElementById('tab-rabbitmq'),
   };
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -22,6 +23,7 @@ function setupTabs() {
     });
   });
 }
+
 
 async function runPipelineStatus(forever = false) {
   if (pipelineStatusInterval) {
@@ -334,8 +336,12 @@ function backToPrList() {
   attachOutputEvents();
 }
 
-function escapeHtml(text) {
-  return text.replace(/[&<>]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c]));
+function escapeHtml(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/[&<>"']/g, function(tag) {
+    const chars = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return chars[tag] || tag;
+  });
 }
 
 document.getElementById('github-pr-diff-btn').addEventListener('click', () => {
@@ -731,4 +737,59 @@ function renderCountdown() {
 document.addEventListener('DOMContentLoaded', () => {
   setupTabs();
   attachOutputEvents();
+});
+
+// --- RabbitMQ Snapshot UI ---
+
+function renderRabbitMQSnapshotTable(queueResults) {
+  let html = '';
+  for (const [queue, messages] of Object.entries(queueResults)) {
+    html += `<h3 style="margin-top:2em;">${queue}</h3>`;
+    if (!messages || messages.length === 0) {
+      html += '<div style="color:#888;">No messages</div>';
+      continue;
+    }
+    html += '<table border="1" cellpadding="4" style="border-collapse:collapse;max-width:100%;margin-bottom:1em;">';
+    html += '<thead><tr>';
+    // Get all unique keys from all message objects
+    const allKeys = Array.from(new Set(messages.flatMap(m => Object.keys(m.message || {}))));
+    html += allKeys.map(k => `<th>${k}</th>`).join('');
+    html += '<th>Count</th></tr></thead><tbody>';
+    for (const { message, count } of messages) {
+      html += '<tr>';
+      for (const key of allKeys) {
+        let val = message[key];
+        if (val === null || val === undefined) val = '';
+        html += `<td>${escapeHtml(val)}</td>`;
+      }
+      html += `<td>${count}</td>`;
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
+  }
+  return html;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const rabbitBtn = document.getElementById('rabbitmq-snapshot-btn');
+  const resultDiv = document.getElementById('output');
+  if (rabbitBtn) {
+    rabbitBtn.addEventListener('click', async () => {
+      rabbitBtn.disabled = true;
+      resultDiv.textContent = 'Collecting snapshot...';
+      try {
+        const res = await fetch('/api/rabbitmq/snapshot');
+        const data = await res.json();
+        if (data.queueResults) {
+          resultDiv.innerHTML = renderRabbitMQSnapshotTable(data.queueResults);
+        } else {
+          resultDiv.textContent = 'No data or error.';
+        }
+      } catch {
+        resultDiv.textContent = 'Error collecting snapshot.';
+      } finally {
+        rabbitBtn.disabled = false;
+      }
+    });
+  }
 });

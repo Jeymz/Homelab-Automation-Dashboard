@@ -70,12 +70,13 @@
   color: #4fc3f7;
 }
 .script-list {
-  min-width: 30%;
+  display: block; /* or flex if you need flex layout inside */
+  width: 100%;
+  box-sizing: border-box; /* include padding in width */
+  padding: 0 2.2em 1.5em 2.2em;
   border: 2.5px solid #1976d2;
   border-radius: 0 0 14px 14px;
   background: #23272e;
-  display: inline-block;
-  padding: 0 2.2em 1.5em 2.2em;
   margin-bottom: 2em;
   margin-top: 0;
   box-shadow: 0 2px 12px #0003;
@@ -83,6 +84,7 @@
   z-index: 1;
   animation: fadeInTab 0.25s;
 }
+
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
   background: #181c20;
@@ -130,6 +132,7 @@ h1 {
   color: #181c20;
 }
 .output {
+  overflow: auto;
   background: #181c20;
   color: #e0e0e0;
   padding: 1.2em;
